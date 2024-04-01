@@ -660,6 +660,18 @@ def list_model_registrations(
     multiple=True,
 )
 @click.option(
+    "--worker-ip",
+    default=None,
+    type=str,
+    help="Specify which worker this model runs on by ip, for distributed situation.",
+)
+@click.option(
+    "--gpu-idx",
+    default=None,
+    type=str,
+    help="Specify which GPUs of a worker this model can run on, separated with commas.",
+)
+@click.option(
     "--trust-remote-code",
     default=True,
     type=bool,
@@ -687,6 +699,8 @@ def model_launch(
     peft_model_path: Optional[str],
     image_lora_load_kwargs: Optional[Tuple],
     image_lora_fuse_kwargs: Optional[Tuple],
+    worker_ip: Optional[str],
+    gpu_idx: Optional[str],
     trust_remote_code: bool,
     api_key: Optional[str],
 ):
@@ -715,6 +729,10 @@ def model_launch(
         else None
     )
 
+    _gpu_idx: Optional[List[int]] = (
+        None if gpu_idx is None else [int(idx) for idx in gpu_idx.split(",")]
+    )
+
     endpoint = get_endpoint(endpoint)
     model_size: Optional[Union[str, int]] = (
         size_in_billions
@@ -737,6 +755,8 @@ def model_launch(
         peft_model_path=peft_model_path,
         image_lora_load_kwargs=image_lora_load_params,
         image_lora_fuse_kwargs=image_lora_fuse_params,
+        worker_ip=worker_ip,
+        gpu_idx=_gpu_idx,
         trust_remote_code=trust_remote_code,
         **kwargs,
     )
